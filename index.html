@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Automation Checkup — A Quick Walkthrough</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #EFEBDF;
+    --paper-dark: #E5E0D0;
+    --ink: #1E2420;
+    --ink-soft: #4B534D;
+    --blue: #2C5C8A;
+    --blue-deep: #1F4266;
+    --wood: #8B5E3C;
+    --amber: #C97A2B;
+    --amber-deep: #A8621E;
+    --green: #4A7856;
+    --line: #C9C2AE;
+    --white: #FBF9F3;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body{
+    min-height: 100vh;
+    background-image:
+      linear-gradient(var(--paper) 0px, var(--paper) 100%);
+  }
+
+  .sheet{
+    max-width: 620px;
+    margin: 0 auto;
+    min-height: 100vh;
+    position: relative;
+    padding: 48px 40px 80px 76px;
+    background: var(--paper);
+  }
+
+  /* clipboard margin rule */
+  .sheet::before{
+    content: "";
+    position: absolute;
+    left: 44px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: repeating-linear-gradient(
+      to bottom,
+      var(--amber) 0px,
+      var(--amber) 1px,
+      transparent 1px,
+      transparent 10px
+    );
+    opacity: 0.55;
+  }
+
+  .sheet::after{
+    content: "";
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 100vh;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 27px,
+      var(--line) 27px,
+      var(--line) 28px
+    );
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .sheet > *{ position: relative; z-index: 1; }
+
+  h1, h2, h3{
+    font-family: 'Oswald', sans-serif;
+    margin: 0;
+    letter-spacing: 0.01em;
+  }
+
+  /* ---------- Header / masthead ---------- */
+  .masthead{
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 14px;
+    margin-bottom: 8px;
+  }
+  .masthead .title{
+    font-size: 22px;
+    font-weight: 600;
+  }
+  .masthead .tag{
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* ---------- Screens ---------- */
+  .screen{ display: none; }
+  .screen.active{ display: block; animation: rise 0.32s ease; }
+
+  @keyframes rise{
+    from{ opacity: 0; transform: translateY(6px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---------- Intro ---------- */
+  .intro-hero{
+    padding: 40px 0 20px;
+  }
+  .intro-hero h1{
+    font-size: 40px;
+    line-height: 1.08;
+    max-width: 9.5em;
+  }
+  .intro-hero p{
+    margin-top: 18px;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 34em;
+  }
+
+  .house-svg{ width: 100%; max-width: 260px; margin: 28px 0; display: block; }
+
+  .checklist-preview{
+    margin: 28px 0 8px;
+    padding: 0;
+    list-style: none;
+  }
+  .checklist-preview li{
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    font-size: 14px;
+    color: var(--ink-soft);
+    padding: 5px 0;
+    border-bottom: 1px dashed var(--line);
+  }
+  .checklist-preview li span.n{
+    font-family: 'Oswald', sans-serif;
+    color: var(--wood);
+    font-size: 13px;
+    width: 1.4em;
+  }
+
+  button{
+    font-family: 'Oswald', sans-serif;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-primary{
+    margin-top: 30px;
+    background: var(--blue);
+    color: var(--white);
+    padding: 15px 30px;
+    font-size: 16px;
+    letter-spacing: 0.02em;
+    border-radius: 2px;
+    box-shadow: 3px 3px 0 var(--blue-deep);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .btn-primary:hover{ transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--blue-deep); }
+  .btn-primary:active{ transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--blue-deep); }
+
+  /* ---------- Progress ---------- */
+  .progress-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 30px 0 22px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .progress-bar{
+    flex: 1;
+    height: 6px;
+    background: var(--paper-dark);
+    margin: 0 14px;
+    position: relative;
+    border: 1px solid var(--line);
+  }
+  .progress-bar-fill{
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: var(--wood);
+    width: 0%;
+    transition: width 0.35s ease;
+  }
+
+  /* ---------- Question card ---------- */
+  .q-index{
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    color: var(--wood);
+    letter-spacing: 0.04em;
+  }
+  .q-category{
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+    margin-bottom: 18px;
+  }
+  .q-text{
+    font-size: 25px;
+    line-height: 1.35;
+    font-weight: 500;
+    max-width: 15.5em;
+    margin-bottom: 30px;
+  }
+
+  .icon-row{
+    margin-bottom: 22px;
+  }
+  .icon-row svg{ width: 52px; height: 52px; }
+
+  .yn-row{
+    display: flex;
+    gap: 16px;
+  }
+  .yn-btn{
+    flex: 1;
+    padding: 18px 0;
+    font-size: 17px;
+    background: var(--white);
+    border: 2px solid var(--ink);
+    border-radius: 2px;
+    color: var(--ink);
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .yn-btn:hover{ background: var(--ink); color: var(--white); }
+  .yn-btn.yes{ }
+  .yn-btn.no{ }
+
+  .skip-link{
+    display: inline-block;
+    margin-top: 22px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-decoration: underline;
+    background: none;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* ---------- Result screens ---------- */
+  .result-tag{
+    display: inline-block;
+    font-family: 'Oswald', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    padding: 5px 11px;
+    border-radius: 2px;
+    margin-bottom: 16px;
+  }
+  .result-tag.ok{ background: rgba(74,120,86,0.14); color: var(--green); border: 1px solid var(--green); }
+  .result-tag.flag{ background: rgba(201,122,43,0.14); color: var(--amber-deep); border: 1px solid var(--amber); }
+
+  .result-heading{
+    font-size: 24px;
+    margin-bottom: 10px;
+    max-width: 16em;
+  }
+  .result-copy{
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    max-width: 32em;
+    margin-bottom: 22px;
+  }
+
+  .product-card{
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 16px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--amber);
+    margin-bottom: 12px;
+  }
+  .product-card .p-icon{ width: 34px; height: 34px; flex-shrink: 0; margin-top: 2px; }
+  .product-card .p-name{
+    font-family: 'Oswald', sans-serif;
+    font-size: 15px;
+    margin-bottom: 3px;
+  }
+  .product-card .p-desc{
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+    margin-bottom: 8px;
+  }
+  .product-card .p-meta{
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .product-card .p-price{
+    font-family: 'Oswald', sans-serif;
+    font-size: 14px;
+    color: var(--wood);
+  }
+  .product-card a.p-link{
+    font-size: 13px;
+    color: var(--blue);
+    text-decoration: none;
+    border-bottom: 1px solid var(--blue);
+  }
+  .product-card a.p-link:hover{ color: var(--blue-deep); border-color: var(--blue-deep); }
+
+  .next-row{
+    margin-top: 26px;
+  }
+  .btn-next{
+    background: var(--ink);
+    color: var(--paper);
+    padding: 13px 26px;
+    font-size: 14px;
+    border-radius: 2px;
+    letter-spacing: 0.02em;
+  }
+  .btn-next:hover{ background: var(--blue-deep); }
+
+  /* ---------- Summary ---------- */
+  .summary-stats{
+    display: flex;
+    gap: 26px;
+    margin: 22px 0 30px;
+  }
+  .stat{ }
+  .stat .num{
+    font-family: 'Oswald', sans-serif;
+    font-size: 34px;
+    line-height: 1;
+  }
+  .stat.ok-num .num{ color: var(--green); }
+  .stat.flag-num .num{ color: var(--amber-deep); }
+  .stat .lbl{
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  .summary-section-title{
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 6px;
+    margin: 26px 0 14px;
+  }
+
+  .summary-ok-item{
+    font-size: 14px;
+    color: var(--ink-soft);
+    padding: 6px 0;
+    display: flex;
+    gap: 8px;
+  }
+  .summary-ok-item svg{ width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; color: var(--green); }
+
+  .restart-btn{
+    margin-top: 34px;
+    background: none;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    padding: 12px 22px;
+    font-size: 13px;
+    border-radius: 2px;
+  }
+  .restart-btn:hover{ background: var(--ink); color: var(--paper); }
+
+  @media (max-width: 480px){
+    .sheet{ padding: 36px 20px 60px 50px; }
+    .sheet::before{ left: 26px; }
+    .intro-hero h1{ font-size: 30px; }
+    .q-text{ font-size: 21px; }
+    .yn-row{ flex-direction: column; }
+    .summary-stats{ gap: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+  <div class="masthead">
+    <div class="title">Home Checkup</div>
+    <div class="tag">Home automation walkthrough</div>
+  </div>
+
+  <!-- ============ INTRO SCREEN ============ -->
+  <div class="screen active" id="screen-intro">
+    <div class="intro-hero">
+      <h1>A quick walkthrough of your home automation setup.</h1>
+      <svg class="house-svg" viewBox="0 0 260 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 80 L130 20 L240 80" stroke="#1E2420" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="40" y="80" width="180" height="70" stroke="#1E2420" stroke-width="3"/>
+        <rect x="110" y="105" width="40" height="45" stroke="#8B5E3C" stroke-width="3"/>
+        <rect x="60" y="95" width="28" height="24" stroke="#2C5C8A" stroke-width="3"/>
+        <rect x="172" y="95" width="28" height="24" stroke="#2C5C8A" stroke-width="3"/>
+        <line x1="130" y1="20" x2="130" y2="45" stroke="#C97A2B" stroke-width="3"/>
+        <rect x="123" y="40" width="14" height="10" stroke="#C97A2B" stroke-width="3"/>
+      </svg>
+      <p>Answer honestly about each spot in your home. A "yes" or "no" that flags a real fix will show you exactly what to get — otherwise, you're done with that item and can move on.</p>
+
+      <ul class="checklist-preview">
+        <li><span class="n">01</span> Automated lights &amp; appliances control — 11 questions</li>
+        <li><span class="n">02</span> Automation control using the phone — 5 questions</li>
+        <li><span class="n">03</span> Control comfort &amp; convenience devices — 8 questions</li>
+        <li><span class="n">04</span> Control of entertainment equipment — 4 questions</li>
+      </ul>
+
+      <button class="btn-primary" onclick="startChecklist()">Start the walkthrough</button>
+    </div>
+  </div>
+
+  <!-- ============ QUESTION SCREEN ============ -->
+  <div class="screen" id="screen-question">
+    <div class="progress-row">
+      <span id="progress-label">Item 1 of 28</span>
+      <div class="progress-bar"><div class="progress-bar-fill" id="progress-fill"></div></div>
+      <span id="progress-count">0 flagged</span>
+    </div>
+
+    <div class="icon-row" id="q-icon"></div>
+    <div class="q-category" id="q-category">Category</div>
+    <div class="q-text" id="q-text">Question text goes here?</div>
+
+    <div class="yn-row">
+      <button class="yn-btn yes" onclick="answer(true)">Yes</button>
+      <button class="yn-btn no" onclick="answer(false)">No</button>
+    </div>
+
+    <button class="skip-link" onclick="answer(null)">Not sure / skip this one</button>
+  </div>
+
+  <!-- ============ RESULT SCREEN ============ -->
+  <div class="screen" id="screen-result">
+    <div id="result-tag" class="result-tag ok">Cleared</div>
+    <h2 class="result-heading" id="result-heading">Nothing to do here.</h2>
+    <p class="result-copy" id="result-copy">This part of your home checked out fine.</p>
+
+    <div id="product-list"></div>
+
+    <div class="next-row">
+      <button class="btn-next" onclick="nextQuestion()" id="next-btn">Next item</button>
+    </div>
+  </div>
+
+  <!-- ============ SUMMARY SCREEN ============ -->
+  <div class="screen" id="screen-summary">
+    <h2 style="font-size:26px; margin-bottom:6px;">Walkthrough complete.</h2>
+    <p class="result-copy" style="margin-bottom:0;">Here's where things stand.</p>
+
+    <div class="summary-stats">
+      <div class="stat ok-num"><div class="num" id="sum-ok">0</div><div class="lbl">cleared, no action</div></div>
+      <div class="stat flag-num"><div class="num" id="sum-flag">0</div><div class="lbl">flagged for a fix</div></div>
+    </div>
+
+    <div id="summary-flagged"></div>
+    <div id="summary-ok-section"></div>
+
+    <button class="restart-btn" onclick="restart()">Run the walkthrough again</button>
+  </div>
+
+</div>
+
+<script>
+  // ---------------- Data ----------------
+  const ICONS = {
+    lights: `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M24 6a12 12 0 00-7 21.8c1 .7 1.6 1.9 1.6 3.2v1h10.8v-1c0-1.3.6-2.5 1.6-3.2A12 12 0 0024 6z" stroke="#C97A2B" stroke-width="2.5"/><line x1="19" y1="38" x2="29" y2="38" stroke="#C97A2B" stroke-width="2.5" stroke-linecap="round"/><line x1="21" y1="42" x2="27" y2="42" stroke="#C97A2B" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+    phone_control: `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="14" y="6" width="20" height="36" rx="3" stroke="#2C5C8A" stroke-width="2.5"/><line x1="14" y1="33" x2="34" y2="33" stroke="#2C5C8A" stroke-width="2"/><circle cx="24" cy="37.5" r="1.5" fill="#2C5C8A"/><path d="M19 18l3 3 7-7" stroke="#2C5C8A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    comfort: `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="16" stroke="#8B5E3C" stroke-width="2.5"/><circle cx="24" cy="24" r="6" stroke="#8B5E3C" stroke-width="2.5"/><line x1="24" y1="8" x2="24" y2="12" stroke="#8B5E3C" stroke-width="2.5" stroke-linecap="round"/><line x1="24" y1="36" x2="24" y2="40" stroke="#8B5E3C" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+    entertainment: `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="10" width="36" height="22" rx="2" stroke="#2C5C8A" stroke-width="2.5"/><line x1="18" y1="38" x2="30" y2="38" stroke="#2C5C8A" stroke-width="2.5" stroke-linecap="round"/><line x1="24" y1="32" x2="24" y2="38" stroke="#2C5C8A" stroke-width="2.5"/><path d="M16 20l4 4-4 4" stroke="#2C5C8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M32 20l-4 4 4 4" stroke="#2C5C8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    check: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 12l5 5L20 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+  };
+
+  const QUESTIONS = [
+    {
+      category: "Automated Lights & Appliances Control",
+      icon: "lights",
+      text: "Do you still have to manually flip switches for lights or plug in appliances to turn them on and off?",
+      flagOn: true, // flags if answer is "yes"
+      okMessage: "You've already got your lights and appliances under automated control — nothing to add here.",
+      flagHeading: "Let's put those lights on autopilot.",
+      flagMessage: "Smart plugs and switches let you control any lamp or appliance on a schedule or remotely, with no rewiring required.",
+      products: [
+        { name: "Smart Wi-Fi plug, 2-pack", desc: "Turns any lamp or small appliance into a scheduled or remotely-controlled device.", price: "$15–25", query: "smart wifi plug 2 pack" },
+        { name: "Smart light switch (in-wall)", desc: "Replaces a standard switch so overhead and hardwired lighting can be automated too.", price: "$20–35", query: "smart wifi light switch in wall" }
+      ]
+    },
+    {
+      category: "Automated Lights & Appliances Control",
+      icon: "lights",
+      text: "Do any of your outdoor lights require you to switch them on and off by hand, with no timer or motion sensor?",
+      flagOn: true,
+      okMessage: "Your outdoor lighting is already handling itself — nothing to change there.",
+      flagHeading: "Let's get those outdoor lights on a schedule.",
+      flagMessage: "A timer or motion-sensor plug means porch and yard lights turn on at dusk and off at dawn without you thinking about it.",
+      products: [
+        { name: "Outdoor smart plug (weatherproof)", desc: "Adds scheduling and remote control to porch lights, string lights, or holiday lighting.", price: "$18–28", query: "outdoor weatherproof smart plug" },
+        { name: "Motion-sensor floodlight", desc: "Turns on automatically when it detects movement, no manual switch needed.", price: "$25–45", query: "motion sensor outdoor floodlight" }
+      ]
+    },
+    {
+      category: "Automated Lights & Appliances Control",
+      icon: "lights",
+      text: "Can your lights automatically turn on when you arrive home or off when you leave, based on your phone's location?",
+      flagOn: false,
+      okMessage: "You've already got location-based automation working for you.",
+      flagHeading: "Let's set up arrival and departure automation.",
+      flagMessage: "Geofencing ties your lights to your phone's location, so they react to you coming and going without any manual step.",
+      products: [
+        { name: "Smart home hub with geofencing app", desc: "Enables location-based routines like 'lights on when I arrive.'", price: "$40–100", query: "smart home hub geofencing" }
+      ]
+    },
+    {
+      category: "Automated Lights & Appliances Control",
+      icon: "lights",
+      text: "Do you have smart bulbs installed in the rooms you use most, like the living room, bedroom, or kitchen?",
+      flagOn: false,
+      okMessage: "Your most-used rooms are already covered with smart lighting.",
+      flagHeading: "Start with your most-used rooms.",
+      flagMessage: "Smart bulbs screw in like a normal bulb but add scheduling, dimming, and remote control — a good starting point for the rooms you're in most.",
+      products: [
+        { name: "Smart LED bulb starter kit, 4-pack", desc: "Wi-Fi bulbs that work with a phone app, no hub required.", price: "$35–55", query: "smart led bulb starter kit 4 pack" }
+      ]
+    },
+    {
+      category: "Automated Lights & Appliances Control",
+      icon: "lights",
+      text: "Is your coffee maker, space heater, or another small appliance still fully manual, with no way to schedule or start it remotely?",
+      flagOn: true,
+      okMessage: "Your everyday appliances are already set up for scheduling or remote control.",
+      flagHeading: "Give that appliance a schedule.",
+      flagMessage: "A smart plug lets you schedule or remotely start everyday appliances, like having coffee ready before you're out of bed.",
+      products: [
+        { name: "Smart Wi-Fi plug with scheduling", desc: "Adds a schedule and remote on/off to any plugged-in appliance.", price: "$12–20", query: "smart wifi plug scheduling" }
+      ]
+    },
+    {
+      category: "Automated Lights & Appliances Control",
+      icon: "lights",
+      text: "Do your lights automatically dim or adjust brightness in the evening without you touching a switch?",
+      flagOn: false,
+      okMessage: "Your lighting already adjusts itself through the evening.",
+      flagHeading: "Add automatic dimming.",
+      flagMessage: "A smart dimmer switch or bulb can gradually lower brightness in the evening on its own schedule.",
+      products: [
+        { name: "Smart dimmer switch (in-wall)", desc: "Replaces a standard switch with app- and schedule-controlled dimming.", price: "$25–40", query: "smart dimmer switch in wall" }
+      ]
+    },
+    {
+      category: "Automated Lights & Appliances Control",
+      icon: "lights",
+      text: "If you forget to turn off a light or appliance before leaving the house, can you turn it off remotely from your phone?",
+      flagOn: false,
+      okMessage: "You're covered — forgetting to switch something off isn't a problem for you anymore.",
+      flagHeading: "Never wonder if you left something on again.",
+      flagMessage: "A smart plug or switch lets you check and turn things off remotely, even after you've already left.",
+      products: [
+        { name: "Smart Wi-Fi plug with app control", desc: "Check the status and turn devices off from anywhere.", price: "$12–20", query: "smart wifi plug app control" }
+      ]
+    },
+    {
+      category: "Automated Lights & Appliances Control",
+      icon: "lights",
+      text: "Can you group multiple lights together so they all turn on or off with a single command, by voice or app?",
+      flagOn: false,
+      okMessage: "You've already got scenes or groups set up — one command handles multiple lights.",
+      flagHeading: "Set up a light group or scene.",
+      flagMessage: "Grouping lights into a single 'scene' means one tap or voice command controls a whole room instead of switch by switch.",
+      products: [
+        { name: "Smart home hub", desc: "Lets you build groups and scenes across multiple smart lights and plugs.", price: "$40–100", query: "smart home hub" }
+      ]
+    },
+    {
+      category: "Automated Lights & Appliances Control",
+      icon: "lights",
+      text: "Are any of your ceiling fans controlled only by a pull chain or wall switch, with no remote or app control?",
+      flagOn: true,
+      okMessage: "Your ceiling fans are already set up for remote or app control.",
+      flagHeading: "Give that fan remote control.",
+      flagMessage: "A smart fan control or smart plug lets you adjust fan speed or turn it off without getting up or reaching for a pull chain.",
+      products: [
+        { name: "Smart ceiling fan control switch", desc: "Replaces a standard fan wall control with app and voice control.", price: "$35–55", query: "smart ceiling fan control switch" }
+      ]
+    },
+    {
+      category: "Automated Lights & Appliances Control",
+      icon: "lights",
+      text: "Do you currently use voice commands, like asking to turn off the kitchen lights, to control any lights or appliances?",
+      flagOn: false,
+      okMessage: "You've already got voice control working for your lights and appliances.",
+      flagHeading: "Add voice control to your routine.",
+      flagMessage: "A smart speaker paired with smart bulbs or plugs means a simple voice command handles what used to take a walk across the room.",
+      products: [
+        { name: "Smart speaker with voice assistant", desc: "Pairs with smart bulbs and plugs for hands-free control.", price: "$30–60", query: "smart speaker voice assistant" }
+      ]
+    },
+    {
+      category: "Automated Lights & Appliances Control",
+      icon: "lights",
+      text: "Have you set up any lighting routines, like lights on at sunset or off at bedtime, that run automatically?",
+      flagOn: false,
+      okMessage: "You've already got automatic routines running for your lighting.",
+      flagHeading: "Set up a sunset or bedtime routine.",
+      flagMessage: "Most smart bulb and plug apps let you build routines tied to time of day or sunset/sunrise, so lighting just happens without a reminder.",
+      products: [
+        { name: "Smart LED bulb starter kit, 4-pack", desc: "Scheduling and sunset/sunrise routines built into the companion app.", price: "$35–55", query: "smart led bulb starter kit 4 pack" }
+      ]
+    },
+    {
+      category: "Automation Control Using The Phone",
+      icon: "phone_control",
+      text: "Can you control your home's connected devices from your phone when you're away?",
+      flagOn: false, // flags if answer is "no"
+      okMessage: "You're already set up to check in on and control your home from your phone.",
+      flagHeading: "Let's get your phone in the loop.",
+      flagMessage: "A smart home hub connects your devices to a single app, so you can see and control your home from anywhere.",
+      products: [
+        { name: "Smart home hub", desc: "Central hub that bridges your smart devices into one phone app.", price: "$40–100", query: "smart home hub" },
+        { name: "Wi-Fi smart plug with app control", desc: "An easy first device if you're starting from scratch — no hub required.", price: "$15–20", query: "wifi smart plug app control" }
+      ]
+    },
+    {
+      category: "Automation Control Using The Phone",
+      icon: "phone_control",
+      text: "Do you get a notification on your phone if a door or window is left open or unlocked?",
+      flagOn: false,
+      okMessage: "You're already covered — you'd know right away if something was left open.",
+      flagHeading: "Add open/unlocked alerts.",
+      flagMessage: "A door or window sensor pushes a notification to your phone the moment it's opened, so you're never guessing whether you locked up.",
+      products: [
+        { name: "Smart door/window sensor, 2-pack", desc: "Sends a phone alert whenever a monitored door or window opens.", price: "$20–35", query: "smart door window sensor 2 pack" }
+      ]
+    },
+    {
+      category: "Automation Control Using The Phone",
+      icon: "phone_control",
+      text: "Can you view live camera footage of the outside or inside of your home from your phone, from anywhere?",
+      flagOn: false,
+      okMessage: "You've already got eyes on your home from wherever you are.",
+      flagHeading: "Add a camera you can check from your phone.",
+      flagMessage: "A Wi-Fi camera streams live video to your phone's app, so you can check on your home, a package, or a pet from anywhere.",
+      products: [
+        { name: "Wi-Fi security camera (indoor/outdoor)", desc: "Streams live video and sends motion alerts to your phone.", price: "$30–60", query: "wifi security camera indoor outdoor" }
+      ]
+    },
+    {
+      category: "Automation Control Using The Phone",
+      icon: "phone_control",
+      text: "Do you need to open more than one separate app to control the different smart devices in your home?",
+      flagOn: true,
+      okMessage: "You've already got everything consolidated into one app — no app-switching required.",
+      flagHeading: "Let's get everything into one app.",
+      flagMessage: "A smart home hub brings devices from different brands under a single app, so you're not hunting for the right one each time.",
+      products: [
+        { name: "Smart home hub", desc: "Consolidates multiple device apps into a single control point.", price: "$40–100", query: "smart home hub" }
+      ]
+    },
+    {
+      category: "Automation Control Using The Phone",
+      icon: "phone_control",
+      text: "Can you lock or unlock your front door from your phone without being home?",
+      flagOn: false,
+      okMessage: "Your front door is already covered — lock and unlock from wherever you are.",
+      flagHeading: "Add remote lock control.",
+      flagMessage: "A smart lock lets you lock up remotely if you forget, or let someone in without being there, all from your phone.",
+      products: [
+        { name: "Smart Wi-Fi deadbolt lock", desc: "Locks and unlocks remotely from a phone app, often with guest access codes.", price: "$100–180", query: "smart wifi deadbolt lock" }
+      ]
+    },
+    {
+      category: "Control Comfort & Convenience Devices",
+      icon: "comfort",
+      text: "Is your thermostat a smart, app-controlled model you can adjust remotely?",
+      flagOn: false,
+      okMessage: "Your comfort setup is already smart — thermostat's covered.",
+      flagHeading: "Time to upgrade your thermostat.",
+      flagMessage: "A smart thermostat learns your schedule, adjusts automatically, and can be controlled from your phone — often paying for itself in energy savings.",
+      products: [
+        { name: "Smart Wi-Fi thermostat", desc: "App-controlled thermostat with scheduling and remote adjustment.", price: "$100–250", query: "smart wifi thermostat" },
+        { name: "Smart blinds/shades controller", desc: "Automates existing blinds for scheduled or remote light and privacy control.", price: "$50–120", query: "smart blinds shades controller" }
+      ]
+    },
+    {
+      category: "Control Comfort & Convenience Devices",
+      icon: "comfort",
+      text: "Do you still have to manually turn on and adjust your humidifier or dehumidifier yourself?",
+      flagOn: true,
+      okMessage: "Your humidity is already being managed automatically — nothing to adjust by hand.",
+      flagHeading: "Put your humidity levels on autopilot.",
+      flagMessage: "A smart humidifier or dehumidifier reads the room and adjusts itself to a target range, instead of you checking a dial.",
+      products: [
+        { name: "Smart humidifier with app control", desc: "Monitors and adjusts humidity automatically, controllable from your phone.", price: "$50–90", query: "smart humidifier app control" },
+        { name: "Smart dehumidifier with auto humidity control", desc: "Keeps humidity in a set range without manual adjustment.", price: "$150–250", query: "smart dehumidifier auto humidity control" }
+      ]
+    },
+    {
+      category: "Control Comfort & Convenience Devices",
+      icon: "comfort",
+      text: "Do you have a water leak sensor placed near your washing machine, water heater, or under any sinks?",
+      flagOn: false,
+      okMessage: "You've already got leak detection in place where it matters.",
+      flagHeading: "Add a leak sensor before a small drip becomes a big problem.",
+      flagMessage: "A leak sensor sends a phone alert the moment it detects moisture, often catching an issue before it causes real damage.",
+      products: [
+        { name: "Smart water leak sensor, 2-pack", desc: "Sends a phone alert the moment it detects water where it shouldn't be.", price: "$25–40", query: "smart water leak sensor 2 pack" }
+      ]
+    },
+    {
+      category: "Control Comfort & Convenience Devices",
+      icon: "comfort",
+      text: "Can you check your home's air quality, like temperature, humidity, or CO2 levels, from an app?",
+      flagOn: false,
+      okMessage: "You're already keeping an eye on your air quality from your phone.",
+      flagHeading: "Keep a closer eye on your air quality.",
+      flagMessage: "A smart air quality monitor tracks conditions in real time and can alert you when something's off, like rising CO2 or humidity.",
+      products: [
+        { name: "Smart indoor air quality monitor", desc: "Tracks temperature, humidity, and air quality with phone alerts.", price: "$60–100", query: "smart indoor air quality monitor" }
+      ]
+    },
+    {
+      category: "Control Comfort & Convenience Devices",
+      icon: "comfort",
+      text: "Do you still open and close your blinds or shades by hand every day?",
+      flagOn: true,
+      okMessage: "Your blinds already handle themselves on a schedule or with the sun.",
+      flagHeading: "Let your blinds run on their own schedule.",
+      flagMessage: "A smart shade motor lets your blinds open and close automatically by time of day or sunlight, without a daily walk to each window.",
+      products: [
+        { name: "Smart shade motor kit", desc: "Retrofits existing blinds or shades for scheduled or app-based control.", price: "$60–130", query: "smart shade motor kit blinds" }
+      ]
+    },
+    {
+      category: "Control Comfort & Convenience Devices",
+      icon: "comfort",
+      text: "Does a robot vacuum or mop clean your floors on a schedule without you having to start it?",
+      flagOn: false,
+      okMessage: "Your floors are already being handled on a schedule — one less thing on your list.",
+      flagHeading: "Let a robot take over the floors.",
+      flagMessage: "A scheduled robot vacuum keeps floors clean in the background, so it's off your to-do list entirely.",
+      products: [
+        { name: "Robot vacuum with app scheduling", desc: "Cleans on a set schedule and can be started remotely from your phone.", price: "$150–300", query: "robot vacuum app scheduling" }
+      ]
+    },
+    {
+      category: "Control Comfort & Convenience Devices",
+      icon: "comfort",
+      text: "Can you check whether your garage door is open or closed, and close it remotely, without walking out to look?",
+      flagOn: false,
+      okMessage: "Your garage is already covered — check and close it from your phone anytime.",
+      flagHeading: "Add remote garage door control.",
+      flagMessage: "A smart garage door controller lets you check the status and close it from your phone, handy for that 'did I close the garage?' moment.",
+      products: [
+        { name: "Smart garage door controller", desc: "Adds phone-based status checks and remote open/close to most existing garage door openers.", price: "$30–60", query: "smart garage door controller" }
+      ]
+    },
+    {
+      category: "Control Comfort & Convenience Devices",
+      icon: "comfort",
+      text: "Do you have to manually turn your sprinklers on and off using a hose timer or the valve itself?",
+      flagOn: true,
+      okMessage: "Your irrigation already runs on a smart schedule — nothing to turn by hand.",
+      flagHeading: "Put your sprinklers on a smart schedule.",
+      flagMessage: "A smart sprinkler controller adjusts watering based on weather and forecasted rain, saving water and avoiding a soggy lawn from overwatering.",
+      products: [
+        { name: "Smart sprinkler controller", desc: "Weather-adjusted watering schedule, controllable from a phone app.", price: "$80–150", query: "smart sprinkler controller weather" }
+      ]
+    },
+    {
+      category: "Control of Entertainment Equipment",
+      icon: "entertainment",
+      text: "Do you still need multiple separate remotes to control your TV, speakers, and other entertainment devices?",
+      flagOn: true,
+      okMessage: "Your entertainment setup is already streamlined under one control.",
+      flagHeading: "Let's consolidate those remotes.",
+      flagMessage: "A universal smart remote or hub lets you control your TV, sound system, and streaming devices from one app or single remote.",
+      products: [
+        { name: "Universal smart remote", desc: "Learns and replaces the remotes for your TV, soundbar, and streaming box.", price: "$30–70", query: "universal smart remote control" },
+        { name: "Smart speaker with voice control", desc: "Adds voice control over compatible entertainment devices alongside your existing remotes.", price: "$40–100", query: "smart speaker voice control" }
+      ]
+    },
+    {
+      category: "Control of Entertainment Equipment",
+      icon: "entertainment",
+      text: "Can you turn on your TV and jump straight to a streaming app using a single voice command or app tap?",
+      flagOn: false,
+      okMessage: "You've already got one-touch control from TV power to streaming app.",
+      flagHeading: "Cut it down to one command.",
+      flagMessage: "A smart speaker or streaming remote hub can turn on your TV and launch the right app together, instead of powering on, switching inputs, and navigating separately.",
+      products: [
+        { name: "Streaming remote hub with voice control", desc: "Turns on your TV and jumps to a streaming app with one command.", price: "$25–50", query: "streaming remote hub voice control" }
+      ]
+    },
+    {
+      category: "Control of Entertainment Equipment",
+      icon: "entertainment",
+      text: "Can you play the same music in multiple rooms at once from your phone?",
+      flagOn: false,
+      okMessage: "Your audio is already synced across rooms whenever you want it.",
+      flagHeading: "Set up whole-home audio.",
+      flagMessage: "A multi-room smart speaker system lets you play the same song everywhere, or different songs in different rooms, all from one app.",
+      products: [
+        { name: "Multi-room smart speaker system", desc: "Syncs audio across rooms, controlled from a single phone app.", price: "$50–150 per speaker", query: "multi room smart speaker system" }
+      ]
+    },
+    {
+      category: "Control of Entertainment Equipment",
+      icon: "entertainment",
+      text: "Do your lights automatically dim when you start a movie or show?",
+      flagOn: false,
+      okMessage: "Your lighting already sets the mood the moment you hit play.",
+      flagHeading: "Sync your lights to movie night.",
+      flagMessage: "A smart hub can link your lights to your TV or streaming app, so the room dims automatically the moment you start watching.",
+      products: [
+        { name: "Smart home hub", desc: "Links smart lights to routines like starting a movie, for automatic dimming.", price: "$40–100", query: "smart home hub" }
+      ]
+    }
+  ];
+
+  // ---------------- State ----------------
+  let current = 0;
+  let flaggedCount = 0;
+  let results = []; // { question, flagged, answer }
+
+  function show(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  function startChecklist(){
+    current = 0;
+    flaggedCount = 0;
+    results = [];
+    show('screen-question');
+    renderQuestion();
+  }
+
+  function renderQuestion(){
+    const q = QUESTIONS[current];
+    document.getElementById('progress-label').textContent = `Item ${current+1} of ${QUESTIONS.length}`;
+    document.getElementById('progress-count').textContent = `${flaggedCount} flagged`;
+    document.getElementById('progress-fill').style.width = `${(current/QUESTIONS.length)*100}%`;
+    document.getElementById('q-icon').innerHTML = ICONS[q.icon];
+    document.getElementById('q-category').textContent = q.category;
+    document.getElementById('q-text').textContent = q.text;
+  }
+
+  function answer(val){
+    const q = QUESTIONS[current];
+    // treat "skip" (null) as not-flagged, no product suggestion
+    const flagged = (val === null) ? false : (val === q.flagOn);
+    results.push({ question: q, flagged: flagged, skipped: val === null });
+    if(flagged) flaggedCount++;
+    renderResult(q, flagged, val === null);
+  }
+
+  function renderResult(q, flagged, skipped){
+    const tag = document.getElementById('result-tag');
+    const heading = document.getElementById('result-heading');
+    const copy = document.getElementById('result-copy');
+    const list = document.getElementById('product-list');
+    list.innerHTML = '';
+
+    if(skipped){
+      tag.className = 'result-tag ok';
+      tag.textContent = 'Skipped';
+      heading.textContent = "No problem — we'll leave that one for you to check later.";
+      copy.textContent = "You can always come back and run through the walkthrough again.";
+    } else if(flagged){
+      tag.className = 'result-tag flag';
+      tag.textContent = 'Flagged';
+      heading.textContent = q.flagHeading;
+      copy.textContent = q.flagMessage;
+      q.products.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+          <div class="p-icon">${ICONS[q.icon]}</div>
+          <div>
+            <div class="p-name">${p.name}</div>
+            <div class="p-desc">${p.desc}</div>
+            <div class="p-meta">
+              <span class="p-price">${p.price}</span>
+              <a class="p-link" href="https://www.amazon.com/s?k=${encodeURIComponent(p.query)}" target="_blank" rel="noopener">Shop options →</a>
+            </div>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    } else {
+      tag.className = 'result-tag ok';
+      tag.textContent = 'Cleared';
+      heading.textContent = "Nothing to do here.";
+      copy.textContent = q.okMessage;
+    }
+
+    document.getElementById('next-btn').textContent = (current === QUESTIONS.length - 1) ? 'See summary' : 'Next item';
+    show('screen-result');
+  }
+
+  function nextQuestion(){
+    current++;
+    if(current >= QUESTIONS.length){
+      renderSummary();
+      return;
+    }
+    show('screen-question');
+    renderQuestion();
+  }
+
+  function renderSummary(){
+    const flagged = results.filter(r => r.flagged);
+    const ok = results.filter(r => !r.flagged && !r.skipped);
+    const skipped = results.filter(r => r.skipped);
+
+    document.getElementById('sum-ok').textContent = ok.length;
+    document.getElementById('sum-flag').textContent = flagged.length;
+
+    const flaggedSection = document.getElementById('summary-flagged');
+    flaggedSection.innerHTML = '';
+    if(flagged.length){
+      const title = document.createElement('div');
+      title.className = 'summary-section-title';
+      title.textContent = 'Flagged — worth a fix';
+      flaggedSection.appendChild(title);
+      flagged.forEach(r => {
+        r.question.products.forEach(p => {
+          const card = document.createElement('div');
+          card.className = 'product-card';
+          card.innerHTML = `
+            <div class="p-icon">${ICONS[r.question.icon]}</div>
+            <div>
+              <div class="p-name">${p.name}</div>
+              <div class="p-desc">${r.question.category} — ${p.desc}</div>
+              <div class="p-meta">
+                <span class="p-price">${p.price}</span>
+                <a class="p-link" href="https://www.amazon.com/s?k=${encodeURIComponent(p.query)}" target="_blank" rel="noopener">Shop options →</a>
+              </div>
+            </div>
+          `;
+          flaggedSection.appendChild(card);
+        });
+      });
+    }
+
+    const okSection = document.getElementById('summary-ok-section');
+    okSection.innerHTML = '';
+    if(ok.length){
+      const title = document.createElement('div');
+      title.className = 'summary-section-title';
+      title.textContent = 'Cleared — no action needed';
+      okSection.appendChild(title);
+      ok.forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'summary-ok-item';
+        item.innerHTML = `${ICONS.check}<span>${r.question.category}</span>`;
+        okSection.appendChild(item);
+      });
+    }
+    if(skipped.length){
+      const title = document.createElement('div');
+      title.className = 'summary-section-title';
+      title.textContent = 'Skipped';
+      okSection.appendChild(title);
+      skipped.forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'summary-ok-item';
+        item.textContent = r.question.category;
+        okSection.appendChild(item);
+      });
+    }
+
+    show('screen-summary');
+  }
+
+  function restart(){
+    show('screen-intro');
+  }
+</script>
+
+</body>
+</html>
